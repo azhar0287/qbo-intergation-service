@@ -1,6 +1,7 @@
 package com.example.quickbookintegrationservice.api;
 
 import com.example.quickbookintegrationservice.bakcupservices.IntegrationService;
+import com.example.quickbookintegrationservice.mappers.ItemMapper;
 import com.example.quickbookintegrationservice.mappers.QboExceptionMessage;
 import com.example.quickbookintegrationservice.mappers.QboServiceResponse;
 import com.example.quickbookintegrationservice.response.DefaultResponse;
@@ -38,7 +39,6 @@ public class RecordService {
     @Autowired
     UtilService utilService;
 
-    public static String tempToken;
     public ResponseEntity createCustomer(String uuid) {
         User user = utilService.checkForRefreshToken(uuid);
         Customer customer = getCustomerMapData();
@@ -83,38 +83,41 @@ public class RecordService {
      * @return
      * @throws FMSException
      */
-    public ResponseEntity createItem(String uuid) {
+    public ResponseEntity createItem(String uuid, ItemMapper itemMapper) {
         User user = utilService.checkForRefreshToken(uuid);
         QboServiceResponse qboServiceResponse = new QboServiceResponse();
         Item savedItem = null;
         try {
             if(user != null) {
                 DataService service = authService.getDataService(user.getRealmId(), user.getAccessToken(), user.getMinorVersion());
-                Item item = mapItemFields(service);
+                Item item = mapItemFields(service, itemMapper);
                 savedItem = service.add(item);
                 if(savedItem!= null) {
                     LOGGER.info("Item has posted in QB name: "+savedItem.getName());
                     //save unique Item id in our table here for our reference
+                    return new ResponseEntity(new DefaultResponse("Success","Customer has saved","S001"), HttpStatus.OK);
                 }
             }
         } catch (FMSException fe) {
-//            qboServiceResponse.setQboExceptionMessage(utilService.getParsedDuplicateQboException(fe));
-//            LOGGER.error(qboServiceResponse.getQboExceptionMessage().getDetail()+" Code: "+qboServiceResponse.getQboExceptionMessage().getStatusCode(), fe);
-            LOGGER.error(fe.getMessage(), fe);
+            qboServiceResponse.setQboExceptionMessage(utilService.getParsedDuplicateQboException(fe));
+            String code = qboServiceResponse.getQboExceptionMessage().getStatusCode();
+            String message = qboServiceResponse.getQboExceptionMessage().getDetail();
+            return new ResponseEntity(new DefaultResponse("Failure", message, code), HttpStatus.OK);
         }
         catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return new ResponseEntity(new DefaultResponse("Success","Customer has saved","S001"), HttpStatus.OK);
+        return new ResponseEntity(new DefaultResponse("Failure", "aaaaaaaaa", "F001"), HttpStatus.OK);
+
     }
 
-    private Item mapItemFields(DataService service) throws FMSException {
+    private Item mapItemFields(DataService service, ItemMapper itemMapper) throws FMSException {
         try {
             Item item = new Item();
-            item.setName("Item: Landing Services v3");
-            item.setTaxable(false);
-            item.setUnitPrice(new BigDecimal("300"));
-            item.setType(ItemTypeEnum.SERVICE);
+            item.setName(itemMapper.getName());
+            item.setTaxable(itemMapper.isTaxable());
+            item.setUnitPrice(itemMapper.getUnitPrice());
+            item.setType(ItemTypeEnum.SERVICE);  //should be from external
 
             Account incomeAccount = integrationService.getIncomeBankAccount(service);
             item.setIncomeAccountRef(createRef(incomeAccount));

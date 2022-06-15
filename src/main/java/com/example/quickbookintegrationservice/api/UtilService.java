@@ -94,7 +94,7 @@ public class UtilService {
         return qboExceptionMessage;
     }
     public QboExceptionMessage getParsedDuplicateQboException(FMSException fe) {
-        QboExceptionMessage qboExceptionMessage = null;
+        QboExceptionMessage qboExceptionMessage = new QboExceptionMessage();
         try {
             if (fe instanceof FMSException) {
                 FMSException ae = (FMSException) fe;
@@ -105,7 +105,6 @@ public class UtilService {
                     qboExceptionMessage.setDetail(message);
                     qboExceptionMessage.setStatusCode(code);
                 }
-
             }
 
         } catch (Exception e) {

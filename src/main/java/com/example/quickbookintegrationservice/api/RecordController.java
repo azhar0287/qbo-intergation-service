@@ -1,6 +1,7 @@
 package com.example.quickbookintegrationservice.api;
 
 import com.example.quickbookintegrationservice.mappers.InvoiceRequestMapper;
+import com.example.quickbookintegrationservice.mappers.ItemMapper;
 import com.example.quickbookintegrationservice.user.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,16 +46,15 @@ public class RecordController {
     }
 
     @PostMapping(value = "/item")
-    String createItem(@RequestParam("userUuid") String userUuid) {
-        String response = null;
+    ResponseEntity createItem(@RequestParam("userUuid") String userUuid, @RequestBody ItemMapper itemMapper) {
+        ResponseEntity responseEntity = null;
         try {
-            recordService.createItem(userUuid);
+            responseEntity = recordService.createItem(userUuid, itemMapper);
             LOGGER.info("User");
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
-        return response;
+        return responseEntity;
     }
-
 
 }
