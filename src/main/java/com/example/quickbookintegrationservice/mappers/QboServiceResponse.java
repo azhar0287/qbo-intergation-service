@@ -9,10 +9,7 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor
 public class QboServiceResponse {
-
     private QboExceptionMessage qboExceptionMessage;
     private Customer savedCustomer;
     private CompanyInfo companyInfo;
-
-
 }

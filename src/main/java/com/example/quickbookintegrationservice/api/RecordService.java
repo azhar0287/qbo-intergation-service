@@ -55,7 +55,6 @@ public class RecordService {
                 }
             }
         } catch (FMSException fe) {
-
             qboServiceResponse.setQboExceptionMessage(utilService.getParsedQboException(fe));
             LOGGER.error(fe.getMessage(), fe);
         }

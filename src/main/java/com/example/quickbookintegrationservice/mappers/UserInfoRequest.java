@@ -15,6 +15,4 @@ public class UserInfoRequest {
     private int refreshTokenExpiry; // will be in days
     private String realmId;
 
-
-
 }
